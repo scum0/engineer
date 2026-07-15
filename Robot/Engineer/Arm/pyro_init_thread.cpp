@@ -46,7 +46,7 @@ void globaldataboard_init()
     global_databoard.create_topic("arm_command_joint3",    pyro::data_type_t::FLOAT);
     global_databoard.create_topic("arm_command_joint4",    pyro::data_type_t::FLOAT);
     global_databoard.create_topic("arm_command_joint5",    pyro::data_type_t::FLOAT);
-    global_databoard.create_topic("arm_command_gripper",    pyro::data_type_t::FLOAT);
+    global_databoard.create_topic("arm_command_gripper",   pyro::data_type_t::FLOAT);
     // 反馈量
     global_databoard.create_topic("axis1_current_pos",    pyro::data_type_t::FLOAT);
     global_databoard.create_topic("axis2_current_pos",    pyro::data_type_t::FLOAT);
@@ -55,7 +55,15 @@ void globaldataboard_init()
     global_databoard.create_topic("axis5_current_pos",    pyro::data_type_t::FLOAT);
     global_databoard.create_topic("axis6_current_pos",    pyro::data_type_t::FLOAT);
     global_databoard.create_topic("gipper_target_pos",    pyro::data_type_t::FLOAT);
+
+    global_databoard.create_topic("axis1_self_command", pyro::data_type_t::FLOAT);
+    global_databoard.create_topic("axis2_self_command", pyro::data_type_t::FLOAT);
+    global_databoard.create_topic("axis3_self_command", pyro::data_type_t::FLOAT);
+    global_databoard.create_topic("axis4_self_command", pyro::data_type_t::FLOAT);
+    global_databoard.create_topic("axis5_self_command", pyro::data_type_t::FLOAT);
+    global_databoard.create_topic("axis6_self_command", pyro::data_type_t::FLOAT);
 }
+
 
 extern "C"
 {

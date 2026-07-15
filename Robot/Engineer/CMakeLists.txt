@@ -26,7 +26,7 @@ set(ENGINEER_SOURCES
         Arm/pyro_debug_thread.cpp
         Arm/pyro_processing_thread.cpp
         Arm/pyro_receive_thread.cpp
-        Arm/arm_control_execute.cpp
+        Arm/self_control_command.cpp
         DataBoard/pyro_databoard.cpp
 )
 

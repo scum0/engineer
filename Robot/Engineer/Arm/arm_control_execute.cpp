@@ -227,7 +227,7 @@ float torque_range[6][2]   = {{-27, 27}, {-150, 150}, {-40, 40}, {-7, 7}, {-7, 7
 
 extern "C" void engineer_arm_init(void* args)
 {
-    osDelay(10);
+    vTaskDelay(10);
 
     pyro::arm_control_init(position_range, rotate_range, torque_range);
 

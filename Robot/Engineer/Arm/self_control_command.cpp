@@ -4,10 +4,13 @@
 #include "self_control_command.h"
 #include "cmsis_os.h"
 #include <cstring>
+#include <string.h>
+#include <cstdio>
+#include <cstdlib>
 
 // 原代码中计算了帧间隔和帧率，未知原因
 // 自控接收串口实例
-pyro::uart_drv_t &self_control_uart = pyro::bsp_uart::get_uart1();
+static pyro::uart_drv_t* self_control_uart = nullptr;
 referee_datalink_frame_t self_control_command;
 extern pyro::databoard global_databoard;
 
@@ -20,7 +23,7 @@ static float alpha = 0.02f;
 
 uint32_t self_axis_id[6];
 
-bool self_control_callback(uint8_t *buf, uint16_t len,BaseType_t &xHigherPriorityTaskWoken)
+static bool self_control_callback(uint8_t *buf, uint16_t len,BaseType_t &xHigherPriorityTaskWoken)
 {
     if( len == sizeof(referee_datalink_frame_t) )
     {
@@ -39,10 +42,10 @@ extern "C" void self_command_updata_thread(void *arg)
         if(xQueueReceive(self_control_queue, self_control_buf, 0)==pdPASS)
         {
             if(verify_crc8_check_sum(self_control_buf,sizeof(pyro::frame_header_t))&&
-            verify_crc8_check_sum(self_control_buf, sizeof(referee_datalink_frame_t))&&
+            verify_crc16_check_sum(self_control_buf, sizeof(referee_datalink_frame_t))&&
             ((referee_datalink_frame_t*)self_control_buf)->header.sof == 0xA5&&
             ((referee_datalink_frame_t*)self_control_buf)->cmd_id == static_cast<uint16_t>(pyro::cmd_id::CUSTOM_CONTROLLER)&&
-            ((referee_datalink_frame_t*)self_control_buf)->header.data_length == 30);
+            ((referee_datalink_frame_t*)self_control_buf)->header.data_length == 30)
             {
                 memcpy(&self_control_command, self_control_buf, sizeof(referee_datalink_frame_t));
                 memcpy(command_buf,&self_control_command.data[0],sizeof(float)*6);
@@ -65,12 +68,12 @@ extern "C" void self_command_updata_thread(void *arg)
 extern "C" void self_control_command_init(void *arg)
 {
     self_control_queue = xQueueCreate(10, sizeof(referee_datalink_frame_t));
-    auto self_control_uart = pyro::bsp_uart::get_uart1();
+    self_control_uart = &pyro::bsp_uart::get_uart1();
     // 注册回调
-    self_control_uart.add_rx_event_callback(self_control_callback, 0x01);
-    
+    self_control_uart->add_rx_event_callback(self_control_callback, 0xA501);
     //显式开启 DMA 接收
-    self_control_uart.enable_rx_dma();
+    self_control_uart->enable_rx_dma();
+    self_control_uart->write((uint8_t*)"ok", strlen("ok"), 100);
 
     self_axis_id[0] = global_databoard.get_topic_id("axis1_self_command");
     self_axis_id[1] = global_databoard.get_topic_id("axis2_self_command");

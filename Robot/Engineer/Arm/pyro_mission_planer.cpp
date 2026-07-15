@@ -12,10 +12,10 @@ extern "C"
     {
         pyro_init_thread(nullptr);
         //vTaskDelay(10);
-        xTaskCreate(pyro_debug_task, "pyro_debug_task", 512, nullptr,
-                    1, nullptr);
-        xTaskCreate(pyro_processing_thread, "pyro_processing_thread", 512, nullptr,
-                    configMAX_PRIORITIES - 1, nullptr);
+        //xTaskCreate(pyro_debug_task, "pyro_debug_task", 512, nullptr,
+                //    1, nullptr);
+        //xTaskCreate(pyro_processing_thread, "pyro_processing_thread", 512, nullptr,
+          //          configMAX_PRIORITIES - 1, nullptr);
         //xTaskCreate(pyro_heartbeat_task, "pyro_heartbeat_task", 512, nullptr,
                     //configMAX_PRIORITIES - 1, nullptr);
         xTaskCreate(engineer_arm_init, "engineer_arm_init", 2048, nullptr,

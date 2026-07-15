@@ -22,7 +22,7 @@ target_compile_definitions(Engineer PRIVATE
 set(ENGINEER_SOURCES
         Arm/pyro_mission_planer.cpp
         Arm/pyro_init_thread.cpp
-        #Arm/arm_control_execute.cpp
+        Arm/arm_control_execute.cpp
         Arm/pyro_debug_thread.cpp
         Arm/pyro_processing_thread.cpp
         Arm/pyro_receive_thread.cpp

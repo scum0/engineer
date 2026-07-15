@@ -1,0 +1,24 @@
+#include "cmsis_os.h"
+
+extern "C"
+{
+    extern void pyro_init_thread(void *argument);
+    extern void pyro_debug_task(void* argument);
+    extern void pyro_processing_thread(void* argument);
+    extern "C" void engineer_arm_init(void* args);
+    //extern void pyro_heartbeat_task(void* argument);
+    void start_mission_planer_task(void const *argument)
+    {
+        pyro_init_thread(nullptr);
+        //vTaskDelay(10);
+        xTaskCreate(pyro_debug_task, "pyro_debug_task", 512, nullptr,
+                    1, nullptr);
+        xTaskCreate(pyro_processing_thread, "pyro_processing_thread", 512, nullptr,
+                    configMAX_PRIORITIES - 1, nullptr);
+        //xTaskCreate(pyro_heartbeat_task, "pyro_heartbeat_task", 512, nullptr,
+                    //configMAX_PRIORITIES - 1, nullptr);
+        xTaskCreate(engineer_arm_init, "engineer_arm_init", 2048, nullptr,
+                    configMAX_PRIORITIES - 1, nullptr);
+        vTaskDelete(nullptr);
+    }
+}

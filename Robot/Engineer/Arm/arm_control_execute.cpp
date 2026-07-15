@@ -143,8 +143,8 @@ void arm_control_init(float (*position_range)[2],
     axis_control[1]->set_limit(-0.3, 1);
     axis_control[2]->set_limit(-0.3, 1.35);
     axis_control[3]->disable_constraint(); // R4 is a free joint, no limit
-    axis_control[4]->set_limit(-0.5*PI, 0.5*PI);
-    axis_control[5]->set_limit(-0.5*PI, 0.5*PI);
+    axis_control[4]->set_limit(-0.5f*PI, 0.5f*PI);
+    axis_control[5]->set_limit(-0.5f*PI, 0.5f*PI);
     end_motor->set_position_range(-PI, PI);
 
     axis_control[0]->set_feedback_pos_offset(0.6461);

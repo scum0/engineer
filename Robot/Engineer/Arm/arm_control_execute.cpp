@@ -5,7 +5,7 @@
 
 extern "C" void engineer_arm_mission(void* args);
 extern pyro::databoard global_databoard;
-PYRO_ArmControlMode_t control_mode = PYRO_ARM_MODE_IDLE;
+PYRO_ArmControlMode_t control_mode = PYRO_ARM_MODE_JOINT_DIRECT;
 
 namespace pyro
 {
@@ -22,7 +22,7 @@ Axis_control_t::Axis_control_t(motor_base_t *motor, pid_t *pos_pid, pid_t *rot_p
 {
     _target_position = 0.0f;
     _target_rotate   = 0.0f;
-    axis_limit      = NO_CONSTRAINT;
+    axis_limit      = CONSTRAINT;
 }
 Axis_control_t::~Axis_control_t(){}
 
@@ -89,7 +89,7 @@ void Axis_control_t::pid_control()
 }
 
 dm_motor_drv_t *axis_motor[6] = {
-    new dm_motor_drv_t(0x2, 0x1, bsp_can::can1),
+    new dm_motor_drv_t(0x11, 0x10, bsp_can::can1),
     new dm_motor_drv_t(0x4, 0x3, bsp_can::can1),
     new dm_motor_drv_t(0x6, 0x5, bsp_can::can3),
     new dm_motor_drv_t(0x8, 0x7, bsp_can::can3),
@@ -99,7 +99,7 @@ dm_motor_drv_t *axis_motor[6] = {
 dm_motor_drv_t *end_motor = new dm_motor_drv_t(0xe, 0xd, bsp_can::can2);
 
 pid_t *axis_pos_pid[6] = {
-    new pid_t(10,0.0,0.0,0.0,52),
+    new pid_t(3,0.0,0.0,0.0,52),
     new pid_t(20,0,0.0,20.0,150),
     new pid_t(15,0.0,0.0,0.0,160),
     new pid_t(15.7,0,0.0,6,200),
@@ -107,7 +107,7 @@ pid_t *axis_pos_pid[6] = {
     new pid_t(9,0.0,0.0,0.0,200)
 };
 pid_t *axis_rot_pid[6] = {
-    new pid_t(8.8,0.0,0.0,0.0,27),
+    new pid_t(1,0.0,0.0,0.0,27),
     new pid_t(20,0,0.0,20.0,150),
     new pid_t(11,0.2,0.0,5.0,40),
     new pid_t(1.0,0.2,0.001,3,7),
@@ -147,7 +147,7 @@ void arm_control_init(float (*position_range)[2],
     axis_control[5]->set_limit(-0.5f*PI, 0.5f*PI);
     end_motor->set_position_range(-PI, PI);
 
-    axis_control[0]->set_feedback_pos_offset(0.6461);
+    axis_control[0]->set_feedback_pos_offset(0);
     axis_control[1]->set_feedback_pos_offset(-2.3022);
     axis_control[2]->set_feedback_pos_offset(-0.2162); 
     axis_control[3]->set_feedback_pos_offset(1.548);
@@ -193,13 +193,27 @@ void engineer_arm_update()
 
 void engineer_arm_set_target()
 {
-    global_databoard.read(axis_target_pos_id[0], (pyro::genenral_data_t*)&(axis_target_pos[0]), *(TickType_t*)nullptr);
-    global_databoard.read(axis_target_pos_id[1], (pyro::genenral_data_t*)&(axis_target_pos[1]), *(TickType_t*)nullptr);
-    global_databoard.read(axis_target_pos_id[2], (pyro::genenral_data_t*)&(axis_target_pos[2]), *(TickType_t*)nullptr);
-    global_databoard.read(axis_target_pos_id[3], (pyro::genenral_data_t*)&(axis_target_pos[3]), *(TickType_t*)nullptr);
-    global_databoard.read(axis_target_pos_id[4], (pyro::genenral_data_t*)&(axis_target_pos[4]), *(TickType_t*)nullptr);
-    global_databoard.read(axis_target_pos_id[5], (pyro::genenral_data_t*)&(axis_target_pos[5]), *(TickType_t*)nullptr);
-    global_databoard.read(axis_target_pos_id[6], (pyro::genenral_data_t*)&(axis_target_pos[6]), *(TickType_t*)nullptr);
+    static TickType_t timestamp;
+    global_databoard.read(axis_target_pos_id[0], (pyro::genenral_data_t*)&(axis_target_pos[0]), timestamp);
+    global_databoard.read(axis_target_pos_id[1], (pyro::genenral_data_t*)&(axis_target_pos[1]), timestamp);
+    global_databoard.read(axis_target_pos_id[2], (pyro::genenral_data_t*)&(axis_target_pos[2]), timestamp);
+    global_databoard.read(axis_target_pos_id[3], (pyro::genenral_data_t*)&(axis_target_pos[3]), timestamp);
+    global_databoard.read(axis_target_pos_id[4], (pyro::genenral_data_t*)&(axis_target_pos[4]), timestamp);
+    global_databoard.read(axis_target_pos_id[5], (pyro::genenral_data_t*)&(axis_target_pos[5]), timestamp);
+    global_databoard.read(axis_target_pos_id[6], (pyro::genenral_data_t*)&(axis_target_pos[6]), timestamp);
+
+    for(int i=0; i<6; i++)
+    {
+        if(fabs(axis_target_pos[i])>=64)  
+        {
+            control_mode = PYRO_ARM_MODE_IDLE;
+            return;
+        }
+        else{
+            control_mode = PYRO_ARM_MODE_JOINT_DIRECT;
+            axis_control[i]->set_target(axis_target_pos[i]);
+        }
+    }
 }
 
 void arm_control()

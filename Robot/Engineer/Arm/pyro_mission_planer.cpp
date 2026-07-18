@@ -5,7 +5,7 @@ extern "C"
     extern void pyro_init_thread(void *argument);
     extern void pyro_debug_task(void* argument);
     extern void pyro_processing_thread(void* argument);
-    extern "C" void engineer_arm_init(void* args);
+    extern void engineer_arm_init(void* args);
     //extern void pyro_heartbeat_task(void* argument);
     void start_mission_planer_task(void const *argument)
     {

@@ -25,7 +25,7 @@ static volatile uint16_t rx_len = 0;
 static volatile bool rx_new_data = false;
 
 // CUIJ 调试串口实例（指针指向 BSP 返回的引用）
-static pyro::uart_drv_t* cuij_uart = nullptr;
+static pyro::uart_drv_t* cuij_uart = &pyro::bsp_uart::get_uart10();
 
 // ==================== DMA 接收回调（ISR 上下文） ====================
 static bool cuij_rx_callback(uint8_t* data, uint16_t len, BaseType_t& xHigherPriorityTaskWoken) {
@@ -55,7 +55,7 @@ static void cuij_cmd_read(const char* topic_name) {
     uint32_t id = global_databoard.get_topic_id(topic_name);
     if (id == 0xFFFFFFFF) {
         cuij_send("Topic not found.\n");
-        return;
+        return; 
     }
     pyro::genenral_data_t data;
     TickType_t timestamp;
@@ -157,7 +157,7 @@ static void cuij_process_line(const char* line) {
 // ==================== 主任务 ====================
 extern "C" void pyro_debug_task(void* argument) {
     // 获取 UART10 实例
-    cuij_uart = &pyro::bsp_uart::get_uart10();
+    //cuij_uart = &pyro::bsp_uart::get_uart10();
 
     // 启用 DMA 接收并注册回调
     cuij_uart->enable_rx_dma();
@@ -166,7 +166,7 @@ extern "C" void pyro_debug_task(void* argument) {
     cuij_send("CUIJ Debug ready.\n");
 
     char line_buf[128];
-    TickType_t last_heartbeat_time = xTaskGetTickCount();  // 初始化心跳计时
+    //TickType_t last_heartbeat_time = xTaskGetTickCount();  // 初始化心跳计时
 
     while (1) {
         // 处理接收到的数据

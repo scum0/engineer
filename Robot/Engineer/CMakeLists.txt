@@ -15,12 +15,20 @@ target_compile_definitions(Engineer PRIVATE
         BOARD=${BOARD}
 )
 
+# ========== 统一编译选项，解决 ARM/Thumb 指令集不匹配 ==========
+target_compile_options(Engineer PRIVATE
+    -mcpu=cortex-m7
+    -mthumb
+    -mfpu=fpv5-d16
+    -mfloat-abi=hard
+)
+
 # ===================== 两个板型共用的基础源文件（目前所有的源文件） =====================
 set(BASE_SOURCES
         DataBoard/pyro_databoard.cpp
 )
 
-# ===================== ARM_BOARD 扩展源文件（预留，当前为空） =====================
+# ===================== ARM_BOARD 扩展源文件 =====================
 set(ARM_EXTRA_SOURCES
         # 未来可添加 ARM 独有的文件，例如：
         Arm/pyro_mission_planer.cpp
@@ -29,14 +37,15 @@ set(ARM_EXTRA_SOURCES
         Arm/pyro_debug_thread.cpp
         Arm/pyro_processing_thread.cpp
         Arm/pyro_receive_thread.cpp
-        # Arm/arm_specific.cpp
+        Arm/self_control_command.cpp
+        Trajectory_generator/motion_planner.cpp
+        Trajectory_generator/virtual_controller.cpp
+        Trajectory_generator/action_register.cpp
 )
 
-# ===================== CHASSIS_BOARD 扩展源文件（预留，当前为空） =====================
+# ===================== CHASSIS_BOARD 扩展源文件 =====================
 set(CHASSIS_EXTRA_SOURCES
-        # 未来可添加 CHASSIS 独有的文件，例如：
-
-        # Chassis/chassis_specific.cpp
+        # 未来可添加 CHASSIS 独有的文件
 )
 
 # ===================== 组合最终源文件列表 =====================
@@ -82,6 +91,7 @@ target_include_directories(Engineer
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}/Arm
         ${CMAKE_CURRENT_SOURCE_DIR}/DataBoard
+        ${CMAKE_CURRENT_SOURCE_DIR}/Trajectory_generator
 )
 
 # ===================== 链接依赖库 =====================

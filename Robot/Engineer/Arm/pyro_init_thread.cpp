@@ -12,11 +12,12 @@
 #include "pyro_us100_drv.h"
 #include "pyro_vt03_rc_drv.h"
 #include "pyro_databoard.h"
+#include "action_register.h"
 pyro::databoard global_databoard;   // 定义全局 DataBoard 对象
 namespace pyro
 {
 
-
+extern void upper_com_init(databoard *db_ptr);
 
 // ==================== 初始化 DataBoard 话题 ====================
 void globaldataboard_init()
@@ -46,7 +47,7 @@ void globaldataboard_init()
     global_databoard.create_topic("arm_command_joint3",    pyro::data_type_t::FLOAT);
     global_databoard.create_topic("arm_command_joint4",    pyro::data_type_t::FLOAT);
     global_databoard.create_topic("arm_command_joint5",    pyro::data_type_t::FLOAT);
-    global_databoard.create_topic("arm_command_gripper",    pyro::data_type_t::FLOAT);
+    global_databoard.create_topic("arm_command_gripper",   pyro::data_type_t::FLOAT);
     // 反馈量
     global_databoard.create_topic("axis1_current_pos",    pyro::data_type_t::FLOAT);
     global_databoard.create_topic("axis2_current_pos",    pyro::data_type_t::FLOAT);
@@ -54,12 +55,50 @@ void globaldataboard_init()
     global_databoard.create_topic("axis4_current_pos",    pyro::data_type_t::FLOAT);
     global_databoard.create_topic("axis5_current_pos",    pyro::data_type_t::FLOAT);
     global_databoard.create_topic("axis6_current_pos",    pyro::data_type_t::FLOAT);
-    global_databoard.create_topic("gipper_target_pos",    pyro::data_type_t::FLOAT);
+    global_databoard.create_topic("gripper_current_pos",    pyro::data_type_t::FLOAT);
+
+
+    //底盘控制
+    global_databoard.create_topic("chassis_ctrl_enable",        pyro::data_type_t::SIGNED_INT);
+    global_databoard.create_topic("chassis_ctrl_vx",        pyro::data_type_t::FLOAT);
+    global_databoard.create_topic("chassis_ctrl_vy",        pyro::data_type_t::FLOAT);
+    global_databoard.create_topic("chassis_ctrl_wz",        pyro::data_type_t::FLOAT);//三个速度
+
+    global_databoard.create_topic("chassis_ctrl_magazine_pos",        pyro::data_type_t::SIGNED_INT);//底盘位置
+    
+    //底盘反馈
+    global_databoard.create_topic("chassis_feedback_magazine_pos",        pyro::data_type_t::SIGNED_INT);//底盘位置
+    global_databoard.create_topic("chassis_feedback_magazine_ready",        pyro::data_type_t::SIGNED_INT);//底盘位置
+
+
+    //自控
+    global_databoard.create_topic("axis1_self_command", pyro::data_type_t::FLOAT);
+    global_databoard.create_topic("axis2_self_command", pyro::data_type_t::FLOAT);
+    global_databoard.create_topic("axis3_self_command", pyro::data_type_t::FLOAT);
+    global_databoard.create_topic("axis4_self_command", pyro::data_type_t::FLOAT);
+    global_databoard.create_topic("axis5_self_command", pyro::data_type_t::FLOAT);
+    global_databoard.create_topic("axis6_self_command", pyro::data_type_t::FLOAT);
+
+
+    //一键操作控制器相关
+        // 一键操作输入（若尚未创建）
+        global_databoard.create_topic("arm_ctrl_tg1_start",     pyro::data_type_t::UNSIGNED_INT);
+        global_databoard.create_topic("arm_ctrl_tg1_choose",    pyro::data_type_t::UNSIGNED_INT);
+
+        // 一键操作状态反馈
+        global_databoard.create_topic("arm_tg1_status",         pyro::data_type_t::UNSIGNED_INT);
+        global_databoard.create_topic("arm_tg1_current_action", pyro::data_type_t::UNSIGNED_INT);
+        global_databoard.create_topic("arm_tg1_progress",       pyro::data_type_t::FLOAT);
+        global_databoard.create_topic("arm_tg1_error_code",     pyro::data_type_t::UNSIGNED_INT);
+        global_databoard.create_topic("arm_tg1_checkpoint_waiting", pyro::data_type_t::UNSIGNED_INT);
+        global_databoard.create_topic("arm_tg1_current_time",   pyro::data_type_t::FLOAT);
+        global_databoard.create_topic("arm_tg1_total_time",     pyro::data_type_t::FLOAT);
 }
 
 extern "C"
 {
     ins_drv_t *ins_drv;
+    
 
     void pyro_init_thread(void *argument)
     {
@@ -83,7 +122,7 @@ extern "C"
         // ins_cfg.gz_offset = 0.0f;
         // ins_cfg.g_norm = 9.80665f;
         // ins_drv->init(ins_cfg);
-
+        pyro::bsp_uart::init_all();
 #ifdef DR16_UART
         dr16_drv_t::instance().start();
         dr16_drv_t::instance().enable();
@@ -159,7 +198,8 @@ extern "C"
 
         // 创建 DataBoard 话题（现在在同一个 namespace 内，可直接调用）
         globaldataboard_init();
-
+        motion::initActionRegistry();
+        //upper_com_init(&global_databoard);
         //vTaskDelete(nullptr);
     }
 }

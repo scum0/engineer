@@ -58,7 +58,7 @@ void Axis_control_t::update_feedback()
     _motor->update_feedback();
     _feedback_position = _motor->get_current_position() - _pos_offset;
     _feedback_rotate   = _motor->get_current_rotate();
-    _feedback_position = _feedback_position + _pos_offset;
+    _feedback_position = _feedback_position;
     if(_feedback_position < -PI)
     {
         _feedback_position = _feedback_position + 2 * PI;
@@ -89,7 +89,7 @@ void Axis_control_t::pid_control()
 }
 
 dm_motor_drv_t *axis_motor[6] = {
-    new dm_motor_drv_t(0x11, 0x10, bsp_can::can1),
+    new dm_motor_drv_t(0x2, 0x1, bsp_can::can1),
     new dm_motor_drv_t(0x4, 0x3, bsp_can::can1),
     new dm_motor_drv_t(0x6, 0x5, bsp_can::can3),
     new dm_motor_drv_t(0x8, 0x7, bsp_can::can3),
@@ -99,7 +99,7 @@ dm_motor_drv_t *axis_motor[6] = {
 dm_motor_drv_t *end_motor = new dm_motor_drv_t(0xe, 0xd, bsp_can::can2);
 
 pid_t *axis_pos_pid[6] = {
-    new pid_t(3,0.0,0.0,0.0,52),
+    new pid_t(10,0.0,0.0,0.0,52),
     new pid_t(20,0,0.0,20.0,150),
     new pid_t(15,0.0,0.0,0.0,160),
     new pid_t(15.7,0,0.0,6,200),
@@ -107,7 +107,7 @@ pid_t *axis_pos_pid[6] = {
     new pid_t(9,0.0,0.0,0.0,200)
 };
 pid_t *axis_rot_pid[6] = {
-    new pid_t(1,0.0,0.0,0.0,27),
+    new pid_t(8.8,12.0,0.0,0.0,27),
     new pid_t(20,0,0.0,20.0,150),
     new pid_t(11,0.2,0.0,5.0,40),
     new pid_t(1.0,0.2,0.001,3,7),
@@ -147,20 +147,20 @@ void arm_control_init(float (*position_range)[2],
     axis_control[5]->set_limit(-0.5f*PI, 0.5f*PI);
     end_motor->set_position_range(-PI, PI);
 
-    axis_control[0]->set_feedback_pos_offset(0);
-    axis_control[1]->set_feedback_pos_offset(-2.3022);
-    axis_control[2]->set_feedback_pos_offset(-0.2162); 
-    axis_control[3]->set_feedback_pos_offset(1.548);
-    axis_control[4]->set_feedback_pos_offset(1.86);
-    axis_control[5]->set_feedback_pos_offset(2.9030);
-    end_axis->set_feedback_pos_offset(-0.3560);
+    axis_control[0]->set_feedback_pos_offset(0.7265);
+    axis_control[1]->set_feedback_pos_offset(-2.32);
+    axis_control[2]->set_feedback_pos_offset(0.169); 
+    axis_control[3]->set_feedback_pos_offset(-0.8383);
+    axis_control[4]->set_feedback_pos_offset(2.46);
+    axis_control[5]->set_feedback_pos_offset(2.72);
+    end_axis->set_feedback_pos_offset(0);
     //设置限位关节的限位值
 }
 
 //轴是控制量，进行pid的控制，控制motor
 void engineer_arm_update()
 {
-    for(int i = 0; i < 6; i++)
+    for(int i = 0; i < 7; i++)
     {
         axis_control[i]->update_feedback();
         axis_control[i]->get_current_position(axis_current_pos[i]);
@@ -202,7 +202,7 @@ void engineer_arm_set_target()
     global_databoard.read(axis_target_pos_id[5], (pyro::genenral_data_t*)&(axis_target_pos[5]), timestamp);
     global_databoard.read(axis_target_pos_id[6], (pyro::genenral_data_t*)&(axis_target_pos[6]), timestamp);
 
-    for(int i=0; i<6; i++)
+    for(int i=0; i<7; i++)
     {
         if(fabs(axis_target_pos[i])>=64)  
         {

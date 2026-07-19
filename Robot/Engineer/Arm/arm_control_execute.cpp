@@ -14,7 +14,7 @@ float motor_current_current[7];
 float motor_current_pos[7];
 float motor_current_rot[7];
 float motor_current_torque[7];
-float axis_target_pos[7];
+float axis_target_pos[7] = {0};
 uint32_t axis_current_pos_id[7];
 uint32_t axis_target_pos_id[7];
 
@@ -139,6 +139,10 @@ void arm_control_init(float (*position_range)[2],
         axis_motor[i]->set_rotate_range(rotate_range[i][0], rotate_range[i][1]);
         axis_motor[i]->set_torque_range(torque_range[i][0], torque_range[i][1]);
     }
+    end_motor->set_position_range(-PI, PI);
+    end_motor->set_rotate_range(-200, 200); 
+    end_motor->set_torque_range(-7, 7);
+
     axis_control[0]->set_limit(-2.1599, PI);
     axis_control[1]->set_limit(-0.3, 1);
     axis_control[2]->set_limit(-0.3, 1.35);
@@ -147,20 +151,20 @@ void arm_control_init(float (*position_range)[2],
     axis_control[5]->set_limit(-0.5f*PI, 0.5f*PI);
     end_motor->set_position_range(-PI, PI);
 
-    axis_control[0]->set_feedback_pos_offset(0.7265);
-    axis_control[1]->set_feedback_pos_offset(-2.32);
-    axis_control[2]->set_feedback_pos_offset(0.169); 
-    axis_control[3]->set_feedback_pos_offset(-0.8383);
-    axis_control[4]->set_feedback_pos_offset(2.46);
-    axis_control[5]->set_feedback_pos_offset(2.72);
-    end_axis->set_feedback_pos_offset(0);
+    axis_control[0]->set_feedback_pos_offset(0.691168);
+    axis_control[1]->set_feedback_pos_offset(-2.3748);
+    axis_control[2]->set_feedback_pos_offset(-0.108); 
+    axis_control[3]->set_feedback_pos_offset(2.34739);
+    axis_control[4]->set_feedback_pos_offset(2.46375);
+    axis_control[5]->set_feedback_pos_offset(2.74246);
+    end_axis->set_feedback_pos_offset(1.8587);
     //设置限位关节的限位值
 }
 
 //轴是控制量，进行pid的控制，控制motor
 void engineer_arm_update()
 {
-    for(int i = 0; i < 7; i++)
+    for(int i = 0; i < 6; i++)
     {
         axis_control[i]->update_feedback();
         axis_control[i]->get_current_position(axis_current_pos[i]);
@@ -168,6 +172,12 @@ void engineer_arm_update()
         motor_current_rot[i] = axis_motor[i]->get_current_rotate();
         motor_current_torque[i] = axis_motor[i]->get_current_torque();
     }
+    end_axis -> update_feedback();
+    end_axis->get_current_position(axis_current_pos[6]);
+    motor_current_pos[6] = end_motor->get_current_position();
+    motor_current_rot[6] = end_motor->get_current_rotate();
+    motor_current_torque[6] = end_motor->get_current_torque();
+
     global_databoard.write_topic(axis_current_pos_id[0],
             *((pyro::genenral_data_t*)&(axis_current_pos[0])));
     global_databoard.write_topic(axis_current_pos_id[1],
@@ -202,7 +212,7 @@ void engineer_arm_set_target()
     global_databoard.read(axis_target_pos_id[5], (pyro::genenral_data_t*)&(axis_target_pos[5]), timestamp);
     global_databoard.read(axis_target_pos_id[6], (pyro::genenral_data_t*)&(axis_target_pos[6]), timestamp);
 
-    for(int i=0; i<7; i++)
+    for(int i=0; i<6; i++)
     {
         if(fabs(axis_target_pos[i])>=64)  
         {
@@ -214,6 +224,15 @@ void engineer_arm_set_target()
             axis_control[i]->set_target(axis_target_pos[i]);
         }
     }
+    if(fabs(axis_target_pos[6])>=64)  
+        {
+            control_mode = PYRO_ARM_MODE_IDLE;
+            return;
+        }
+        else{
+            control_mode = PYRO_ARM_MODE_JOINT_DIRECT;
+            end_axis->set_target(axis_target_pos[6]);
+        }
 }
 
 void arm_control()
@@ -222,6 +241,7 @@ void arm_control()
     {
         axis_control[i]->pid_control();
     }
+    end_axis -> pid_control();
 }
 
 void engineer_arm_zeroforce()
@@ -230,6 +250,7 @@ void engineer_arm_zeroforce()
     {
         axis_motor[i]->send_torque(0.0f);
     }
+    end_motor -> send_torque(0.0f);
 }
 
 
@@ -290,7 +311,7 @@ extern "C" void engineer_arm_mission(void* args)
 {
     for(;;)
     {
-        pyro::engineer_arm_update();
+        pyro::engineer_arm_update();            //更新控制量和pid反馈
         pyro::engineer_arm_set_target();
         if(control_mode==PYRO_ARM_MODE_IDLE)
         {
@@ -302,5 +323,4 @@ extern "C" void engineer_arm_mission(void* args)
         }
         vTaskDelay(1);
     }
-
 }

@@ -1,16 +1,16 @@
+#include "pyro_core_config.h"
 #include "pyro_crc.h"
 #include "pyro_uart_drv.h"
 #include "pyro_bsp_uart.h"
 #include "self_control_command.h"
 #include "cmsis_os.h"
 #include <cstring>
-#include <string.h>
-#include <cstdio>
-#include <cstdlib>
 
-// 原代码中计算了帧间隔和帧率，未知原因
-// 自控接收串口实例
-static pyro::uart_drv_t* self_control_uart = &pyro::bsp_uart::get_uart7();;
+// 自控接收串口实例，由CMake宏 SELF_CTRL_UART 分配串口
+#ifdef SELF_CTRL_UART
+static pyro::uart_drv_t* self_control_uart = &SELF_CTRL_UART;
+#endif
+
 referee_datalink_frame_t self_control_command;
 extern pyro::databoard global_databoard;
 
@@ -18,12 +18,12 @@ QueueSetHandle_t self_control_queue;
 
 uint8_t self_control_buf[128];
 float command_buf[6];           // 串口传入的命令
-float filter_command[6];        // 经给低通滤波器，最终的目标命令
+float filter_command[6];        // 经低通滤波器，最终的目标命令
 static float alpha = 0.02f;
 
 uint32_t self_axis_id[6];
 
-    static bool self_control_callback(uint8_t *buf, uint16_t len, BaseType_t &xHigherPriorityTaskWoken)
+static bool self_control_callback(uint8_t *buf, uint16_t len, BaseType_t &xHigherPriorityTaskWoken)
 {
     uint16_t i = 0;
     // 遍历缓冲区寻找帧头 0xA5 0x1E
@@ -81,12 +81,14 @@ extern "C" void self_command_updata_thread(void *arg)
 extern "C" void self_control_command_init(void *arg)
 {
     self_control_queue = xQueueCreate(10, sizeof(referee_datalink_frame_t));
-    
+
+    // 仅当CMake定义SELF_CTRL_UART时执行串口初始化
+#ifdef SELF_CTRL_UART
     // 注册回调
     self_control_uart->add_rx_event_callback(self_control_callback, 0xA501);
     //显式开启 DMA 接收
     self_control_uart->enable_rx_dma();
-    self_control_uart->write((uint8_t*)"ok", strlen("ok"), 100);
+#endif
 
     self_axis_id[0] = global_databoard.get_topic_id("axis1_self_command");
     self_axis_id[1] = global_databoard.get_topic_id("axis2_self_command");

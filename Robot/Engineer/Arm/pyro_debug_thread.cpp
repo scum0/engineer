@@ -7,6 +7,7 @@
  * 新增：每秒心跳
  ***************************************************/
 
+#include "pyro_core_config.h"       //必须加该头文件
 #include "FreeRTOS.h"
 #include "task.h"
 #include "pyro_typedef.h"
@@ -24,8 +25,12 @@ static uint8_t rx_buf[RX_BUF_SIZE];
 static volatile uint16_t rx_len = 0;
 static volatile bool rx_new_data = false;
 
+//通过cmakelist可以修改串口分配
+//文件中包含串口的部分很多，就直接给整个文件加define了，如果不多的话可以只给串口的语句加define
+//下面的部分没有改的，只在结尾加了#endif
+#ifdef DEBUG_UART
 // CUIJ 调试串口实例（指针指向 BSP 返回的引用）
-static pyro::uart_drv_t* cuij_uart = &pyro::bsp_uart::get_uart10();
+static pyro::uart_drv_t* cuij_uart = &DEBUG_UART;
 
 // ==================== DMA 接收回调（ISR 上下文） ====================
 static bool cuij_rx_callback(uint8_t* data, uint16_t len, BaseType_t& xHigherPriorityTaskWoken) {
@@ -207,3 +212,4 @@ extern "C" void pyro_debug_task(void* argument) {
         vTaskDelay(pdMS_TO_TICKS(10));
     }
 }
+#endif

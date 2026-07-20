@@ -131,7 +131,6 @@ void arm_control_init(float (*position_range)[2],
                       float (*rotate_range)[2], 
                       float (*torque_range)[2]
                     )
-
 {
     for(int i = 0; i < 6; i++)
     {
@@ -151,9 +150,9 @@ void arm_control_init(float (*position_range)[2],
     axis_control[5]->set_limit(-0.5f*PI, 0.5f*PI);
     end_motor->set_position_range(-PI, PI);
 
-    axis_control[0]->set_feedback_pos_offset(0.691168);
-    axis_control[1]->set_feedback_pos_offset(-2.3748);
-    axis_control[2]->set_feedback_pos_offset(-0.108); 
+    axis_control[0]->set_feedback_pos_offset(0.65045);
+    axis_control[1]->set_feedback_pos_offset(-2.3948);
+    axis_control[2]->set_feedback_pos_offset(-0.328); 
     axis_control[3]->set_feedback_pos_offset(2.34739);
     axis_control[4]->set_feedback_pos_offset(2.46375);
     axis_control[5]->set_feedback_pos_offset(2.74246);
@@ -266,12 +265,12 @@ extern "C" void engineer_arm_init(void* args)
 
     pyro::arm_control_init(position_range, rotate_range, torque_range);
 
-    pyro::axis_target_pos_id[0] = global_databoard.get_topic_id("arm_command_joint0");
-    pyro::axis_target_pos_id[1] = global_databoard.get_topic_id("arm_command_joint1");
-    pyro::axis_target_pos_id[2] = global_databoard.get_topic_id("arm_command_joint2");
-    pyro::axis_target_pos_id[3] = global_databoard.get_topic_id("arm_command_joint3");
-    pyro::axis_target_pos_id[4] = global_databoard.get_topic_id("arm_command_joint4");
-    pyro::axis_target_pos_id[5] = global_databoard.get_topic_id("arm_command_joint5");
+    pyro::axis_target_pos_id[0] = global_databoard.get_topic_id("axis1_self_command");
+    pyro::axis_target_pos_id[1] = global_databoard.get_topic_id("axis2_self_command");
+    pyro::axis_target_pos_id[2] = global_databoard.get_topic_id("axis3_self_command");
+    pyro::axis_target_pos_id[3] = global_databoard.get_topic_id("axis4_self_command");
+    pyro::axis_target_pos_id[4] = global_databoard.get_topic_id("axis5_self_command");
+    pyro::axis_target_pos_id[5] = global_databoard.get_topic_id("axis6_self_command");
     pyro::axis_target_pos_id[6] = global_databoard.get_topic_id("arm_command_gripper");
 
     //获取旋转轴当前逻辑位置的topic id
@@ -301,6 +300,7 @@ extern "C" void engineer_arm_init(void* args)
     pyro::end_motor->enable();
     vTaskDelay(1);
 
+    //轴1的pid再调一调
     xTaskCreate(engineer_arm_mission, "engineer_arm_mission", 512, nullptr,
                     configMAX_PRIORITIES - 1, nullptr);
 

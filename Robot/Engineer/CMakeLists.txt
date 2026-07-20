@@ -30,7 +30,6 @@ set(BASE_SOURCES
 
 # ===================== ARM_BOARD 扩展源文件 =====================
 set(ARM_EXTRA_SOURCES
-        # 未来可添加 ARM 独有的文件，例如：
         Arm/pyro_mission_planer.cpp
         Arm/pyro_init_thread.cpp
         Arm/arm_control_execute.cpp
@@ -54,32 +53,19 @@ if (BOARD STREQUAL "ARM_BOARD")
     # 针对 ARM_BOARD 的特殊宏定义（作用于 PYRo 目标）
     target_compile_definitions(PYRo PUBLIC
             DR16_UART=PYRO_UART5
-            VT03_UART=PYRO_UART1
-            AUTOAIM_UART=PYRO_UART7
     )
-    # 为 Engineer 自身添加宏定义，以启用 instance() 方法
+    # 为 Engineer 自身添加宏定义
     target_compile_definitions(Engineer PRIVATE
             DR16_UART=PYRO_UART5
-            VT03_UART=PYRO_UART1
-            AUTOAIM_UART=PYRO_UART7
+            SELF_CTRL_UART=PYRO_UART10
+            DEBUG_UART=PYRO_UART7
     )
 
 elseif (BOARD STREQUAL "CHASSIS_BOARD")
     target_sources(Engineer PRIVATE ${BASE_SOURCES} ${CHASSIS_EXTRA_SOURCES})
     # 针对 CHASSIS_BOARD 的特殊宏定义（作用于 PYRo 目标）
-    target_compile_definitions(PYRo PUBLIC
-            REFEREE_UART=PYRO_UART1
-            SR05_UART=PYRO_UART5
-            SR04_UART=PYRO_UART10
-            SUPERCAP_UART=PYRO_UART7
-    )
+
     # 为 Engineer 自身添加宏定义
-    target_compile_definitions(Engineer PRIVATE
-            REFEREE_UART=PYRO_UART1
-            SR05_UART=PYRO_UART5
-            SR04_UART=PYRO_UART10
-            SUPERCAP_UART=PYRO_UART7
-    )
 
 else()
     message(FATAL_ERROR "Unsupported BOARD type: ${BOARD}. Choose ARM_BOARD or CHASSIS_BOARD.")

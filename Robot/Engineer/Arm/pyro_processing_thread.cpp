@@ -19,11 +19,11 @@
 // 限幅参数
 #define JOINT_MIN_LIMIT  -3.1416f
 #define JOINT_MAX_LIMIT   3.1416f
-#define GRIPPER_MIN_LIMIT 0.0f
-#define GRIPPER_MAX_LIMIT 1.0f
+#define GRIPPER_MIN_LIMIT -1.5f
+#define GRIPPER_MAX_LIMIT 0.0f
 
 // 零力标志值（执行层识别后进入零力状态）
-#define ZERO_FORCE_FLAG   80.0f
+#define ZERO_FORCE_FLAG   0.0f
 
 // 外部全局 DataBoard 对象
 extern pyro::databoard global_databoard;

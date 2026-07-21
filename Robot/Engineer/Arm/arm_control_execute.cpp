@@ -17,6 +17,7 @@ float motor_current_torque[7];
 float axis_target_pos[7] = {0};
 uint32_t axis_current_pos_id[7];
 uint32_t axis_target_pos_id[7];
+uint32_t control_mode_id;
 
 Axis_control_t::Axis_control_t(motor_base_t *motor, pid_t *pos_pid, pid_t *rot_pid) : _motor(motor), _pos_pid(pos_pid), _rot_pid(rot_pid)
 {
@@ -148,7 +149,8 @@ void arm_control_init(float (*position_range)[2],
     axis_control[3]->disable_constraint(); // R4 is a free joint, no limit
     axis_control[4]->set_limit(-0.5f*PI, 0.5f*PI);
     axis_control[5]->set_limit(-0.5f*PI, 0.5f*PI);
-    end_motor->set_position_range(-PI, PI);
+    end_axis->set_limit(-PI, 0);
+
 
     axis_control[0]->set_feedback_pos_offset(0.65045);
     axis_control[1]->set_feedback_pos_offset(-2.3948);
@@ -265,14 +267,13 @@ extern "C" void engineer_arm_init(void* args)
 
     pyro::arm_control_init(position_range, rotate_range, torque_range);
 
-    pyro::axis_target_pos_id[0] = global_databoard.get_topic_id("axis1_self_command");
-    pyro::axis_target_pos_id[1] = global_databoard.get_topic_id("axis2_self_command");
-    pyro::axis_target_pos_id[2] = global_databoard.get_topic_id("axis3_self_command");
-    pyro::axis_target_pos_id[3] = global_databoard.get_topic_id("axis4_self_command");
-    pyro::axis_target_pos_id[4] = global_databoard.get_topic_id("axis5_self_command");
-    pyro::axis_target_pos_id[5] = global_databoard.get_topic_id("axis6_self_command");
+    pyro::axis_target_pos_id[0] = global_databoard.get_topic_id("arm_command_joint0");
+    pyro::axis_target_pos_id[1] = global_databoard.get_topic_id("arm_command_joint1");
+    pyro::axis_target_pos_id[2] = global_databoard.get_topic_id("arm_command_joint2");
+    pyro::axis_target_pos_id[3] = global_databoard.get_topic_id("arm_command_joint3");
+    pyro::axis_target_pos_id[4] = global_databoard.get_topic_id("arm_command_joint4");
+    pyro::axis_target_pos_id[5] = global_databoard.get_topic_id("arm_command_joint5");
     pyro::axis_target_pos_id[6] = global_databoard.get_topic_id("arm_command_gripper");
-
     //获取旋转轴当前逻辑位置的topic id
     pyro::axis_current_pos_id[0] = global_databoard.get_topic_id("axis1_current_pos");
     pyro::axis_current_pos_id[1] = global_databoard.get_topic_id("axis2_current_pos");

@@ -17,6 +17,9 @@ static Action g_empty_action;
 // 静态存储：动作1对象
 static Action g_action1;
 
+// 静态存储：动作2对象（新增）
+static Action g_action2;
+
 // -------------------- 注册与查询 --------------------
 bool registerAction(uint8_t id, const Action* action) {
     if (id >= MAX_ACTIONS) return false;
@@ -59,11 +62,9 @@ void initActionRegistry() {
     }
 
     // ---------- 注册编号1：简单往返动作（无校验） ----------
-    // 定义 5 个关键帧：时间 0, 1, 2, 3, 4 秒，所有关节同步运动
     Pose action1_poses[5];
-    const double times[5] = {0.0, 1.0, 2.0, 3.0, 4.0};
-    // 关节位置序列：0 → 1 → 0 → -1 → 0
-    const double positions[5][NUM_JOINTS] = {
+    const double times1[5] = {0.0, 1.0, 2.0, 3.0, 4.0};
+    const double positions1[5][NUM_JOINTS] = {
         {0, 0, 0, 0, 0, 0},
         {1, 1, 1, 1, 1, 1},
         {0, 0, 0, 0, 0, 0},
@@ -72,11 +73,11 @@ void initActionRegistry() {
     };
 
     for (int i = 0; i < 5; ++i) {
-        action1_poses[i].time = times[i];
-        action1_poses[i].gripper = 0.0;          // 夹爪保持 0
-        action1_poses[i].tolerance = -1.0;       // 不校验
+        action1_poses[i].time = times1[i];
+        action1_poses[i].gripper = 0.0;
+        action1_poses[i].tolerance = -1.0;
         for (int j = 0; j < NUM_JOINTS; ++j) {
-            action1_poses[i].joints[j] = positions[i][j];
+            action1_poses[i].joints[j] = positions1[i][j];
             action1_poses[i].vel[j] = 0.0;
             action1_poses[i].acc[j] = 0.0;
         }
@@ -84,6 +85,35 @@ void initActionRegistry() {
 
     if (g_action1.registerFromPoses(action1_poses, 5)) {
         registerAction(1, &g_action1);
+    }
+
+    // ---------- 注册编号2：自定义动作（间隔2秒，无校验） ----------
+    // 共6个关键帧，时间从0开始，步长2秒
+    const int num_poses2 = 6;
+    Pose action2_poses[num_poses2];
+    // 关节数据（每行6个，顺序与NUM_JOINTS一致）
+    const double joint_data[6][NUM_JOINTS] = {
+        {0.0,      0.124,   0.411,   0.036,  0.0,   -0.163},
+        {0.583,    0.21,    0.21,    0.058,  0.0,   -0.178},
+        {2.66,     0.447,   0.5142,  0.043,  0.0,   -0.178},
+        {2.024,    0.33,    0.47,   -1.78,   0.0,   -0.21},
+        {0.627,    0.613,   0.812,   0.1165, 0.0,   -1.821},
+        {-0.117,   0.58,    0.82,   -0.04,   0.0,   -0.07}
+    };
+
+    for (int i = 0; i < num_poses2; ++i) {
+        action2_poses[i].time = i * 2.0;           // 间隔2秒
+        action2_poses[i].gripper = 0.0;            // 夹爪全0
+        action2_poses[i].tolerance = -1.0;         // 不校验
+        for (int j = 0; j < NUM_JOINTS; ++j) {
+            action2_poses[i].joints[j] = joint_data[i][j];
+            action2_poses[i].vel[j] = 0.0;
+            action2_poses[i].acc[j] = 0.0;
+        }
+    }
+
+    if (g_action2.registerFromPoses(action2_poses, num_poses2)) {
+        registerAction(2, &g_action2);
     }
 
     // ---------- 其它编号暂不注册（留空） ----------

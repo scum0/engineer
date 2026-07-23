@@ -16,12 +16,13 @@
 #include <cstring>
 #include <cstdio>
 #include <cstdlib>
-
+#include "pyro_core_dma_heap.h"
 extern pyro::databoard global_databoard;
 
 // ==================== 接收缓冲区 ====================
 #define RX_BUF_SIZE 256
-static uint8_t rx_buf[RX_BUF_SIZE];
+// 【修改】将接收缓冲区放入 .dma_heap 段，确保 DMA 可访问
+__attribute__((section(".dma_heap"))) static uint8_t rx_buf[RX_BUF_SIZE];
 static volatile uint16_t rx_len = 0;
 static volatile bool rx_new_data = false;
 

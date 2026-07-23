@@ -15,8 +15,7 @@ referee_datalink_frame_t self_control_command;
 extern pyro::databoard global_databoard;
 
 QueueSetHandle_t self_control_queue;
-
-uint8_t self_control_buf[128];
+__attribute__((section(".dma_heap"))) static uint8_t self_control_buf[128];
 float command_buf[6];           // 串口传入的命令
 float filter_command[6];        // 经低通滤波器，最终的目标命令
 static float alpha = 0.02f;

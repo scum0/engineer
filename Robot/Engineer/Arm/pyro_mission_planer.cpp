@@ -28,8 +28,8 @@ extern "C"
         xTaskCreate(pyro_receive_thread, "pyro_receive_thread", 512, nullptr,
                     configMAX_PRIORITIES - 2, nullptr); 
         vTaskDelay(20);
-        xTaskCreate(arm_interboard_init, "arm_interboard_init", 512, nullptr,
-                    configMAX_PRIORITIES - 2, nullptr);          
+        // xTaskCreate(arm_interboard_init, "arm_interboard_init", 512, nullptr,
+        //             configMAX_PRIORITIES - 2, nullptr);          
         vTaskDelete(nullptr);
     }
 }

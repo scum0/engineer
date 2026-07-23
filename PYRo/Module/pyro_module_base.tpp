@@ -15,7 +15,7 @@
  */
 
 #pragma once
-
+#include "pyro_module_base.h"
 namespace pyro
 {
 

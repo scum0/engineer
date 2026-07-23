@@ -22,6 +22,7 @@ extern void upper_com_init(databoard *db_ptr);
 // ==================== 初始化 DataBoard 话题 ====================
 void globaldataboard_init()
 {
+    // ==================== 机械臂控制（ARM） ====================
     // 控制模式
     global_databoard.create_topic("arm_ctrl_mode",      pyro::data_type_t::UNSIGNED_INT);
     // 六个关节
@@ -40,6 +41,7 @@ void globaldataboard_init()
     global_databoard.create_topic("arm_ctrl_orientation_yaw",    pyro::data_type_t::FLOAT);
     // 夹爪
     global_databoard.create_topic("arm_ctrl_gripper",    pyro::data_type_t::FLOAT);
+
     // 执行层指令
     global_databoard.create_topic("arm_command_joint0",    pyro::data_type_t::FLOAT);
     global_databoard.create_topic("arm_command_joint1",    pyro::data_type_t::FLOAT);
@@ -48,6 +50,7 @@ void globaldataboard_init()
     global_databoard.create_topic("arm_command_joint4",    pyro::data_type_t::FLOAT);
     global_databoard.create_topic("arm_command_joint5",    pyro::data_type_t::FLOAT);
     global_databoard.create_topic("arm_command_gripper",   pyro::data_type_t::FLOAT);
+
     // 反馈量
     global_databoard.create_topic("axis1_current_pos",    pyro::data_type_t::FLOAT);
     global_databoard.create_topic("axis2_current_pos",    pyro::data_type_t::FLOAT);
@@ -55,23 +58,28 @@ void globaldataboard_init()
     global_databoard.create_topic("axis4_current_pos",    pyro::data_type_t::FLOAT);
     global_databoard.create_topic("axis5_current_pos",    pyro::data_type_t::FLOAT);
     global_databoard.create_topic("axis6_current_pos",    pyro::data_type_t::FLOAT);
-    global_databoard.create_topic("gripper_current_pos",    pyro::data_type_t::FLOAT);
+    global_databoard.create_topic("gripper_current_pos",  pyro::data_type_t::FLOAT);
 
+    // ==================== 底盘通信（ARM → 底盘 控制指令） ====================
+    // 使能（改为 UNSIGNED_INT，更语义化）
+    global_databoard.create_topic("chassis_ctrl_enable",        pyro::data_type_t::UNSIGNED_INT);
+    global_databoard.create_topic("chassis_ctrl_vx",            pyro::data_type_t::FLOAT);
+    global_databoard.create_topic("chassis_ctrl_vy",            pyro::data_type_t::FLOAT);
+    global_databoard.create_topic("chassis_ctrl_wz",            pyro::data_type_t::FLOAT);
+    global_databoard.create_topic("chassis_ctrl_magazine_pos",  pyro::data_type_t::UNSIGNED_INT);
 
-    //底盘控制
-    global_databoard.create_topic("chassis_ctrl_enable",        pyro::data_type_t::SIGNED_INT);
-    global_databoard.create_topic("chassis_ctrl_vx",        pyro::data_type_t::FLOAT);
-    global_databoard.create_topic("chassis_ctrl_vy",        pyro::data_type_t::FLOAT);
-    global_databoard.create_topic("chassis_ctrl_wz",        pyro::data_type_t::FLOAT);//三个速度
+    // 摇臂控制（虽然暂时不用，但通信框架已预留，先创建以便扩展）
+    global_databoard.create_topic("chassis_ctrl_lift_control_mod",   pyro::data_type_t::UNSIGNED_INT);
+    global_databoard.create_topic("chassis_ctrl_lift_auto",          pyro::data_type_t::UNSIGNED_INT);
+    global_databoard.create_topic("chassis_ctrl_lift_mannual",       pyro::data_type_t::UNSIGNED_INT);
+    global_databoard.create_topic("chassis_ctrl_lift_calib_trigger", pyro::data_type_t::UNSIGNED_INT);
 
-    global_databoard.create_topic("chassis_ctrl_magazine_pos",        pyro::data_type_t::SIGNED_INT);//底盘位置
-    
-    //底盘反馈
-    global_databoard.create_topic("chassis_feedback_magazine_pos",        pyro::data_type_t::SIGNED_INT);//底盘位置
-    global_databoard.create_topic("chassis_feedback_magazine_ready",        pyro::data_type_t::SIGNED_INT);//底盘位置
+    // ==================== 底盘反馈（底盘 → ARM 反馈状态） ====================
+    global_databoard.create_topic("chassis_feedback_online",         pyro::data_type_t::SIGNED_INT);
+    global_databoard.create_topic("chassis_feedback_magazine_pos",   pyro::data_type_t::SIGNED_INT);
+    global_databoard.create_topic("chassis_feedback_magazine_ready", pyro::data_type_t::SIGNED_INT);
 
-
-    //自控
+    // ==================== 自控指令（规划层使用） ====================
     global_databoard.create_topic("axis1_self_command", pyro::data_type_t::FLOAT);
     global_databoard.create_topic("axis2_self_command", pyro::data_type_t::FLOAT);
     global_databoard.create_topic("axis3_self_command", pyro::data_type_t::FLOAT);
@@ -79,20 +87,18 @@ void globaldataboard_init()
     global_databoard.create_topic("axis5_self_command", pyro::data_type_t::FLOAT);
     global_databoard.create_topic("axis6_self_command", pyro::data_type_t::FLOAT);
 
-
-    //一键操作控制器相关
-        // 一键操作输入（若尚未创建）
-        global_databoard.create_topic("arm_ctrl_tg1_start",     pyro::data_type_t::UNSIGNED_INT);
-        global_databoard.create_topic("arm_ctrl_tg1_choose",    pyro::data_type_t::UNSIGNED_INT);
-
-        // 一键操作状态反馈
-        global_databoard.create_topic("arm_tg1_status",         pyro::data_type_t::UNSIGNED_INT);
-        global_databoard.create_topic("arm_tg1_current_action", pyro::data_type_t::UNSIGNED_INT);
-        global_databoard.create_topic("arm_tg1_progress",       pyro::data_type_t::FLOAT);
-        global_databoard.create_topic("arm_tg1_error_code",     pyro::data_type_t::UNSIGNED_INT);
-        global_databoard.create_topic("arm_tg1_checkpoint_waiting", pyro::data_type_t::UNSIGNED_INT);
-        global_databoard.create_topic("arm_tg1_current_time",   pyro::data_type_t::FLOAT);
-        global_databoard.create_topic("arm_tg1_total_time",     pyro::data_type_t::FLOAT);
+    // ==================== 一键操作控制器 ====================
+    // 输入
+    global_databoard.create_topic("arm_ctrl_tg1_start",     pyro::data_type_t::UNSIGNED_INT);
+    global_databoard.create_topic("arm_ctrl_tg1_choose",    pyro::data_type_t::UNSIGNED_INT);
+    // 状态反馈
+    global_databoard.create_topic("arm_tg1_status",         pyro::data_type_t::UNSIGNED_INT);
+    global_databoard.create_topic("arm_tg1_current_action", pyro::data_type_t::UNSIGNED_INT);
+    global_databoard.create_topic("arm_tg1_progress",       pyro::data_type_t::FLOAT);
+    global_databoard.create_topic("arm_tg1_error_code",     pyro::data_type_t::UNSIGNED_INT);
+    global_databoard.create_topic("arm_tg1_checkpoint_waiting", pyro::data_type_t::UNSIGNED_INT);
+    global_databoard.create_topic("arm_tg1_current_time",   pyro::data_type_t::FLOAT);
+    global_databoard.create_topic("arm_tg1_total_time",     pyro::data_type_t::FLOAT);
 }
 
 extern "C"

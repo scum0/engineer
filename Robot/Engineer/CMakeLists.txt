@@ -40,6 +40,7 @@ set(ARM_EXTRA_SOURCES
         Trajectory_generator/motion_planner.cpp
         Trajectory_generator/virtual_controller.cpp
         Trajectory_generator/action_register.cpp
+        Arm/pyro_arm_interboard_thread.cpp
 )
 
 # ===================== CHASSIS_BOARD 扩展源文件 =====================
@@ -59,6 +60,7 @@ if (BOARD STREQUAL "ARM_BOARD")
             DR16_UART=PYRO_UART5
             SELF_CTRL_UART=PYRO_UART10
             DEBUG_UART=PYRO_UART1
+            INTERBOARD_UART=PYRO_UART7
     )
 
 elseif (BOARD STREQUAL "CHASSIS_BOARD")

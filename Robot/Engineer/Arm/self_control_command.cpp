@@ -5,7 +5,7 @@
 #include "self_control_command.h"
 #include "cmsis_os.h"
 #include <cstring>
-
+#include "pyro_core_dma_heap.h"
 // 自控接收串口实例，由CMake宏 SELF_CTRL_UART 分配串口
 #ifdef SELF_CTRL_UART
 static pyro::uart_drv_t* self_control_uart = &SELF_CTRL_UART;

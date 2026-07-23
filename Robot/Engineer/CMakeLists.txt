@@ -58,9 +58,9 @@ if (BOARD STREQUAL "ARM_BOARD")
     # 为 Engineer 自身添加宏定义
     target_compile_definitions(Engineer PRIVATE
             DR16_UART=PYRO_UART5
-            SELF_CTRL_UART=PYRO_UART10
-            DEBUG_UART=PYRO_UART7
-            INTERBOARD_UART=PYRO_UART5
+            SELF_CTRL_UART=PYRO_UART7
+            DEBUG_UART=PYRO_UART1
+            INTERBOARD_UART=PYRO_UART7
     )
 
 elseif (BOARD STREQUAL "CHASSIS_BOARD")

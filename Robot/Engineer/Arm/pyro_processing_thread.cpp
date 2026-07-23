@@ -23,7 +23,7 @@
 #define GRIPPER_MAX_LIMIT 0.0f
 
 // 零力标志值（执行层识别后进入零力状态）
-#define ZERO_FORCE_FLAG   0.0f
+#define ZERO_FORCE_FLAG   80.0f
 
 // 外部全局 DataBoard 对象
 extern pyro::databoard global_databoard;

@@ -90,12 +90,12 @@ extern "C" void self_control_command_init(void *arg)
     self_control_uart->enable_rx_dma();
 #endif
 
-    self_axis_id[0] = global_databoard.get_topic_id("axis1_self_command");
-    self_axis_id[1] = global_databoard.get_topic_id("axis2_self_command");
-    self_axis_id[2] = global_databoard.get_topic_id("axis3_self_command");
-    self_axis_id[3] = global_databoard.get_topic_id("axis4_self_command");
-    self_axis_id[4] = global_databoard.get_topic_id("axis5_self_command");
-    self_axis_id[5] = global_databoard.get_topic_id("axis6_self_command");
+    self_axis_id[0] = global_databoard.get_topic_id("arm_command_joint0");
+    self_axis_id[1] = global_databoard.get_topic_id("arm_command_joint1");
+    self_axis_id[2] = global_databoard.get_topic_id("arm_command_joint2");
+    self_axis_id[3] = global_databoard.get_topic_id("arm_command_joint3");
+    self_axis_id[4] = global_databoard.get_topic_id("arm_command_joint4");
+    self_axis_id[5] = global_databoard.get_topic_id("arm_command_joint5");
 
     xTaskCreate(self_command_updata_thread, "self_command_updata_thread", 512, nullptr,
                     configMAX_PRIORITIES - 1, nullptr);
